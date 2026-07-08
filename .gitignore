@@ -10,6 +10,7 @@ run/
 .claude/
 .codex/
 .agents/
+libs/
 
 .project
 .classpath
