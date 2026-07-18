@@ -11,8 +11,8 @@ import java.util.List;
 
 /** Temporary synthetic Catacombs snapshot used to exercise the HUD renderer before live detection lands. */
 public final class MockDungeonMapRenderer {
-	public static final float WIDTH = 148.0F;
-	public static final float HEIGHT = 164.0F;
+	public static final float WIDTH = MapHudLayout.BASE_WIDTH;
+	public static final float HEIGHT = MapHudLayout.BASE_HEIGHT;
 
 	private static final float MAP_OFFSET = 10.0F;
 	private static final float MAP_SIZE = 128.0F;

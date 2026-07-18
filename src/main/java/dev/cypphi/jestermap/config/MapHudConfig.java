@@ -15,6 +15,10 @@ public record MapHudConfig(
 		return new MapHudConfig(value, x, y, scale, rotateWithPlayer, backgroundBlur, showRoomNames, showSecretCounts, showTeammates);
 	}
 
+	public MapHudConfig withPosition(int newX, int newY) {
+		return new MapHudConfig(enabled, newX, newY, scale, rotateWithPlayer, backgroundBlur, showRoomNames, showSecretCounts, showTeammates);
+	}
+
 	public MapHudConfig withScale(double value) {
 		return new MapHudConfig(enabled, x, y, value, rotateWithPlayer, backgroundBlur, showRoomNames, showSecretCounts, showTeammates);
 	}
