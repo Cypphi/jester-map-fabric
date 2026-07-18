@@ -27,6 +27,11 @@ class MapRotationTest {
 		assertEquals(0.0F, MapRotation.markerRadians(-90.0F, false), EPSILON);
 	}
 
+	@Test
+	void pointsMarkerSouthOnNorthUpMap() {
+		assertEquals((float) (Math.PI * 0.5D), MapRotation.markerRadians(0.0F, false), EPSILON);
+	}
+
 	private static void assertEquivalentAngle(float expected, float actual) {
 		float turn = (float) (Math.PI * 2.0D);
 		float difference = (actual - expected) % turn;

@@ -22,7 +22,7 @@ class MapHudLayoutTest {
 	@Test
 	void clampsFreeDraggingToTheScreen() {
 		assertEquals(
-				new MapHudLayout.Position(352, 236),
+				new MapHudLayout.Position(352, 252),
 				MapHudLayout.draggedPosition(900, 900, 1.0D, 500, 400, false)
 		);
 	}
@@ -38,7 +38,7 @@ class MapHudLayoutTest {
 	@Test
 	void alignsEqualDistancesFromBottomRightCorner() {
 		assertEquals(
-				new MapHudLayout.Position(303, 187),
+				new MapHudLayout.Position(295, 195),
 				MapHudLayout.draggedPosition(300, 190, 1.0D, 500, 400, true)
 		);
 	}

@@ -1,8 +1,9 @@
 package dev.cypphi.jestermap;
 
 import dev.cypphi.jestermap.client.command.JesterClientCommands;
+import dev.cypphi.jestermap.client.hud.DungeonMapController;
+import dev.cypphi.jestermap.client.hud.DungeonMapHud;
 import dev.cypphi.jestermap.client.hud.MapHudChatEditor;
-import dev.cypphi.jestermap.client.hud.MockDungeonMapHud;
 import dev.cypphi.jestermap.config.ConfigService;
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -18,8 +19,9 @@ public final class JesterMapClient {
 		if (INITIALIZED.compareAndSet(false, true)) {
 			ConfigService.getInstance().initialize(FabricLoader.getInstance().getConfigDir());
 			JesterClientCommands.initialize();
+			DungeonMapController.initialize();
 			MapHudChatEditor.initialize();
-			MockDungeonMapHud.initialize();
+			DungeonMapHud.initialize();
 			JesterMap.LOGGER.info("{} client initialized for Minecraft {}", JesterMap.MOD_NAME, targetMinecraftVersion);
 		}
 	}

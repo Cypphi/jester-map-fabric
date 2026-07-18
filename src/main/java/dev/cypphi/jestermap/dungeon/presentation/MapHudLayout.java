@@ -4,7 +4,7 @@ import dev.cypphi.jestermap.config.MapHudConfig;
 
 public final class MapHudLayout {
 	public static final float BASE_WIDTH = 148.0F;
-	public static final float BASE_HEIGHT = 164.0F;
+	public static final float BASE_HEIGHT = 148.0F;
 
 	private MapHudLayout() {
 	}

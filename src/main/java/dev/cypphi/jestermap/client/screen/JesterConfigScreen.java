@@ -7,7 +7,8 @@ import dev.cypphi.jestermap.config.ConfigService;
 import dev.cypphi.jestermap.config.JesterConfig;
 import dev.cypphi.jestermap.config.MapHudConfig;
 import dev.cypphi.jestermap.config.VisibilityConfig;
-import dev.cypphi.jestermap.dungeon.presentation.MockDungeonMapRenderer;
+import dev.cypphi.jestermap.client.hud.DungeonMapController;
+import dev.cypphi.jestermap.dungeon.presentation.DungeonMapRenderer;
 import dev.cypphi.jestermap.render.Renderer2d;
 import dev.cypphi.jestermap.render.minecraft.MinecraftRenderBackend2d;
 import net.minecraft.client.Minecraft;
@@ -43,7 +44,7 @@ public final class JesterConfigScreen extends Screen {
 	private final Screen parent;
 	private final MinecraftRenderBackend2d backend = new MinecraftRenderBackend2d();
 	private final Renderer2d renderer = new Renderer2d(backend);
-	private final MockDungeonMapRenderer previewRenderer = new MockDungeonMapRenderer();
+	private final DungeonMapRenderer previewRenderer = new DungeonMapRenderer();
 	private JesterConfig draft;
 	private Tab activeTab = Tab.MAP;
 	private boolean draggingScale;
@@ -256,18 +257,18 @@ public final class JesterConfigScreen extends Screen {
 	private void renderPreview(GuiGraphicsExtractor graphics, Rect card) {
 		float availableWidth = card.width() - 20.0F;
 		float availableHeight = card.height() - 44.0F;
-		float scale = Math.min(availableWidth / MockDungeonMapRenderer.WIDTH, availableHeight / MockDungeonMapRenderer.HEIGHT);
-		float previewX = card.x() + (card.width() - MockDungeonMapRenderer.WIDTH * scale) * 0.5F;
-		float previewY = card.y() + 32.0F + (availableHeight - MockDungeonMapRenderer.HEIGHT * scale) * 0.5F;
+		float scale = Math.min(availableWidth / DungeonMapRenderer.WIDTH, availableHeight / DungeonMapRenderer.HEIGHT);
+		float previewX = card.x() + (card.width() - DungeonMapRenderer.WIDTH * scale) * 0.5F;
+		float previewY = card.y() + 32.0F + (availableHeight - DungeonMapRenderer.HEIGHT * scale) * 0.5F;
 		float yaw = minecraft != null && minecraft.player != null ? minecraft.player.getYRot() : -55.0F;
-		previewRenderer.render(graphics, previewX, previewY, scale, draft.mapHud(), draft.visibility(), yaw);
+		previewRenderer.render(graphics, previewX, previewY, scale, draft.mapHud(), draft.visibility(), yaw, DungeonMapController.snapshot());
 	}
 
 	private void renderText(GuiGraphicsExtractor graphics, ScreenLayout layout) {
 		Rect panel = layout.panel();
 		graphics.text(font, Component.translatable("jester_map.config.title"), (int) panel.x() + 76, (int) panel.y() + 18, TEXT_COLOR, true);
 		graphics.text(font, Component.translatable("jester_map.config.subtitle"), (int) panel.x() + 76, (int) panel.y() + 37, MUTED_TEXT_COLOR, false);
-		graphics.text(font, "LIVE MOCK MAP", (int) layout.previewCard().x() + 14, (int) layout.previewCard().y() + 12, ACCENT_COLOR, false);
+		graphics.text(font, "LIVE DUNGEON MAP", (int) layout.previewCard().x() + 14, (int) layout.previewCard().y() + 12, ACCENT_COLOR, false);
 		graphics.text(font, activeTab.heading, (int) layout.settingsCard().x() + 14, (int) layout.settingsCard().y() + 12, ACCENT_COLOR, false);
 
 		for (TabButton tabButton : layout.tabs()) {
