@@ -10,6 +10,7 @@ run/
 .claude/
 .codex/
 .agents/
+.serena/
 libs/
 
 .project

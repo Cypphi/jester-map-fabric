@@ -30,7 +30,7 @@ stonecutter {
 	kotlinController.set(true)
 	create(rootProject) {
 		kotlinController.set(true)
-		vcsVersion.set("1.21.11")
-		versions("1.21.11", "26.1.1", "26.1.2", "26.2")
+		vcsVersion.set("26.1.2")
+		versions("26.1.1", "26.1.2", "26.2")
 	}
 }

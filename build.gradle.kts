@@ -10,13 +10,12 @@ plugins {
 
 val modId = "jester_map"
 val minecraftVersion = property("minecraft_version").toString()
-val yarnMappings = findProperty("yarn_mappings")?.toString()
 val loaderVersion = property("loader_version").toString()
 val fabricVersion = property("fabric_version").toString()
 val modVersion = property("mod_version").toString()
 val mavenGroup = property("maven_group").toString()
 val archivesBaseName = property("archives_base_name").toString()
-val mappingsProvider = findProperty("mappings_provider")?.toString() ?: if (yarnMappings == null) "mojmap" else "yarn"
+val mappingsProvider = findProperty("mappings_provider")?.toString() ?: "identity"
 val minecraftRange = findProperty("minecraft_range")?.toString() ?: minecraftVersion
 val minecraftDependency = findProperty("minecraft_dependency")?.toString() ?: minecraftVersion
 val fabricDependency = findProperty("fabric_dependency")?.toString() ?: ">=$fabricVersion"
@@ -52,10 +51,6 @@ loom {
 dependencies {
 	minecraft("com.mojang:minecraft:$minecraftVersion")
 	when (mappingsProvider) {
-		"yarn" -> {
-			val yarnMappingVersion = yarnMappings ?: throw GradleException("yarn_mappings must be set when mappings_provider=yarn")
-			mappings("net.fabricmc:yarn:$yarnMappingVersion:v2")
-		}
 		"mojmap", "official" -> mappings(loom.officialMojangMappings())
 		"none", "identity" -> mappings(loom.layered {
 			mappings(rootProject.file("versions/$minecraftVersion/identity.tiny")) {
