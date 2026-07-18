@@ -2,10 +2,12 @@ package dev.cypphi.jestermap.client.screen;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import dev.cypphi.jestermap.JesterMap;
+import dev.cypphi.jestermap.client.font.JesterTextRenderer;
 import dev.cypphi.jestermap.config.ConfigDefaults;
 import dev.cypphi.jestermap.config.ConfigService;
 import dev.cypphi.jestermap.config.JesterConfig;
 import dev.cypphi.jestermap.config.MapHudConfig;
+import dev.cypphi.jestermap.config.UiConfig;
 import dev.cypphi.jestermap.config.VisibilityConfig;
 import dev.cypphi.jestermap.client.hud.DungeonMapController;
 import dev.cypphi.jestermap.dungeon.presentation.DungeonMapRenderer;
@@ -44,6 +46,7 @@ public final class JesterConfigScreen extends Screen {
 	private final Screen parent;
 	private final MinecraftRenderBackend2d backend = new MinecraftRenderBackend2d();
 	private final Renderer2d renderer = new Renderer2d(backend);
+	private final JesterTextRenderer textRenderer = JesterTextRenderer.getInstance();
 	private final DungeonMapRenderer previewRenderer = new DungeonMapRenderer();
 	private JesterConfig draft;
 	private Tab activeTab = Tab.MAP;
@@ -224,7 +227,7 @@ public final class JesterConfigScreen extends Screen {
 			renderer.drawCircle((float) (trackX + trackWidth * normalized), trackY + 2.0F, 4.5F, ACCENT_COLOR);
 			return;
 		}
-		if (row.control() == Control.VISIBILITY) {
+		if (row.control() == Control.VISIBILITY || row.control() == Control.FONT_FAMILY) {
 			Rect chip = new Rect(row.bounds().maxX() - 116.0F, row.bounds().y() + 9.0F, 104.0F, 20.0F);
 			renderer.drawRoundedRect(chip.x(), chip.y(), chip.width(), chip.height(), 6.0F, TRACK_COLOR);
 			renderer.drawRoundedRectOutline(chip.x(), chip.y(), chip.width(), chip.height(), 6.0F, ACCENT_DIM_COLOR, 1.0F);
@@ -261,29 +264,32 @@ public final class JesterConfigScreen extends Screen {
 		float previewX = card.x() + (card.width() - DungeonMapRenderer.WIDTH * scale) * 0.5F;
 		float previewY = card.y() + 32.0F + (availableHeight - DungeonMapRenderer.HEIGHT * scale) * 0.5F;
 		float yaw = minecraft != null && minecraft.player != null ? minecraft.player.getYRot() : -55.0F;
-		previewRenderer.render(graphics, previewX, previewY, scale, draft.mapHud(), draft.visibility(), yaw, DungeonMapController.snapshot());
+		previewRenderer.render(graphics, previewX, previewY, scale, draft.mapHud(), draft.visibility(), draft.ui(), yaw,
+				DungeonMapController.snapshot());
 	}
 
 	private void renderText(GuiGraphicsExtractor graphics, ScreenLayout layout) {
 		Rect panel = layout.panel();
-		graphics.text(font, Component.translatable("jester_map.config.title"), (int) panel.x() + 76, (int) panel.y() + 18, TEXT_COLOR, true);
-		graphics.text(font, Component.translatable("jester_map.config.subtitle"), (int) panel.x() + 76, (int) panel.y() + 37, MUTED_TEXT_COLOR, false);
-		graphics.text(font, "LIVE DUNGEON MAP", (int) layout.previewCard().x() + 14, (int) layout.previewCard().y() + 12, ACCENT_COLOR, false);
-		graphics.text(font, activeTab.heading, (int) layout.settingsCard().x() + 14, (int) layout.settingsCard().y() + 12, ACCENT_COLOR, false);
+		drawText(graphics, Component.translatable("jester_map.config.title"), panel.x() + 76.0F, panel.y() + 18.0F, TEXT_COLOR, true);
+		drawText(graphics, Component.translatable("jester_map.config.subtitle"), panel.x() + 76.0F, panel.y() + 37.0F, MUTED_TEXT_COLOR, false);
+		drawText(graphics, "LIVE DUNGEON MAP", layout.previewCard().x() + 14.0F, layout.previewCard().y() + 12.0F, ACCENT_COLOR, false);
+		drawText(graphics, activeTab.heading, layout.settingsCard().x() + 14.0F, layout.settingsCard().y() + 12.0F, ACCENT_COLOR, false);
 
 		for (TabButton tabButton : layout.tabs()) {
 			centeredText(graphics, Component.literal(tabButton.tab().label), tabButton.bounds(),
 					tabButton.tab() == activeTab ? TEXT_COLOR : MUTED_TEXT_COLOR);
 		}
 		for (SettingRow row : layout.rows()) {
-			graphics.text(font, row.label(), (int) row.bounds().x() + 12, (int) row.bounds().y() + 15, TEXT_COLOR, false);
+			drawText(graphics, row.label(), row.bounds().x() + 12.0F, row.bounds().y() + 15.0F, TEXT_COLOR, false);
 			if (row.control() == Control.SCALE) {
 				String value = Math.round(draft.mapHud().scale() * 100.0D) + "%";
-				graphics.text(font, value, (int) row.bounds().maxX() - 142, (int) row.bounds().y() + 15, MUTED_TEXT_COLOR, false);
-			} else if (row.control() == Control.VISIBILITY) {
-				String value = draft.visibility().mode().displayName();
-				int valueX = (int) row.bounds().maxX() - 64 - font.width(value) / 2;
-				graphics.text(font, value, valueX, (int) row.bounds().y() + 15, TEXT_COLOR, false);
+				drawText(graphics, value, row.bounds().maxX() - 142.0F, row.bounds().y() + 15.0F, MUTED_TEXT_COLOR, false);
+			} else if (row.control() == Control.VISIBILITY || row.control() == Control.FONT_FAMILY) {
+				String value = row.control() == Control.VISIBILITY
+						? draft.visibility().mode().displayName()
+						: draft.ui().fontFamily().displayName();
+				float valueX = row.bounds().maxX() - 64.0F - textRenderer.width(draft.ui(), value) * 0.5F;
+				drawText(graphics, value, valueX, row.bounds().y() + 15.0F, TEXT_COLOR, false);
 			}
 		}
 
@@ -291,20 +297,29 @@ public final class JesterConfigScreen extends Screen {
 		centeredText(graphics, Component.translatable("jester_map.config.close"), layout.closeButton(), TEXT_COLOR);
 		centeredText(graphics, Component.translatable("jester_map.config.save"), layout.saveButton(), TEXT_COLOR);
 		if (!status.isBlank()) {
-			graphics.text(font, status, (int) panel.x() + 76, (int) panel.y() + 51,
+			drawText(graphics, status, panel.x() + 76.0F, panel.y() + 51.0F,
 					statusError ? ERROR_COLOR : MUTED_TEXT_COLOR, false);
 		}
 	}
 
 	private void centeredText(GuiGraphicsExtractor graphics, Component text, Rect bounds, int color) {
-		int x = (int) (bounds.x() + (bounds.width() - font.width(text)) * 0.5F);
-		int y = (int) (bounds.y() + (bounds.height() - font.lineHeight) * 0.5F + 1.0F);
-		graphics.text(font, text, x, y, color, false);
+		float x = bounds.x() + (bounds.width() - textRenderer.width(draft.ui(), text)) * 0.5F;
+		float y = bounds.y() + (bounds.height() - textRenderer.lineHeight(draft.ui())) * 0.5F + 1.0F;
+		drawText(graphics, text, x, y, color, false);
+	}
+
+	private void drawText(GuiGraphicsExtractor graphics, Component text, float x, float y, int color, boolean shadow) {
+		textRenderer.draw(graphics, draft.ui(), text, x, y, color, shadow);
+	}
+
+	private void drawText(GuiGraphicsExtractor graphics, String text, float x, float y, int color, boolean shadow) {
+		textRenderer.draw(graphics, draft.ui(), text, x, y, color, shadow);
 	}
 
 	private void activate(Control control) {
 		MapHudConfig map = draft.mapHud();
 		VisibilityConfig visibility = draft.visibility();
+		UiConfig ui = draft.ui();
 		draft = switch (control) {
 			case ENABLED -> draft.withMapHud(map.withEnabled(!map.enabled()));
 			case ROTATION -> draft.withMapHud(map.withRotateWithPlayer(!map.rotateWithPlayer()));
@@ -314,6 +329,8 @@ public final class JesterConfigScreen extends Screen {
 			case TEAMMATES -> draft.withMapHud(map.withShowTeammates(!map.showTeammates()));
 			case VISIBILITY -> draft.withVisibility(visibility.withMode(visibility.mode().next()));
 			case DARKEN_DOORS -> draft.withVisibility(visibility.withDarkenUndiscoveredDoors(!visibility.darkenUndiscoveredDoors()));
+			case CUSTOM_FONT -> draft.withUi(ui.withCustomFont(!ui.customFont()));
+			case FONT_FAMILY -> draft.withUi(ui.withFontFamily(ui.fontFamily().next()));
 			case SCALE -> draft;
 		};
 		status = "";
@@ -328,7 +345,8 @@ public final class JesterConfigScreen extends Screen {
 			case SECRET_COUNTS -> draft.mapHud().showSecretCounts();
 			case TEAMMATES -> draft.mapHud().showTeammates();
 			case DARKEN_DOORS -> draft.visibility().darkenUndiscoveredDoors();
-			case SCALE, VISIBILITY -> false;
+			case CUSTOM_FONT -> draft.ui().customFont();
+			case SCALE, VISIBILITY, FONT_FAMILY -> false;
 		};
 	}
 
@@ -369,11 +387,12 @@ public final class JesterConfigScreen extends Screen {
 		float settingsWidth = panel.maxX() - 18.0F - settingsX;
 		float tabHeight = 27.0F;
 		float tabGap = 6.0F;
-		float tabWidth = (settingsWidth - tabGap * 2.0F) / 3.0F;
+		float tabWidth = (settingsWidth - tabGap * 3.0F) / 4.0F;
 		List<TabButton> tabs = List.of(
 				new TabButton(new Rect(settingsX, contentY, tabWidth, tabHeight), Tab.MAP),
 				new TabButton(new Rect(settingsX + tabWidth + tabGap, contentY, tabWidth, tabHeight), Tab.DETAILS),
-				new TabButton(new Rect(settingsX + (tabWidth + tabGap) * 2.0F, contentY, tabWidth, tabHeight), Tab.VISIBILITY)
+				new TabButton(new Rect(settingsX + (tabWidth + tabGap) * 2.0F, contentY, tabWidth, tabHeight), Tab.VISIBILITY),
+				new TabButton(new Rect(settingsX + (tabWidth + tabGap) * 3.0F, contentY, tabWidth, tabHeight), Tab.APPEARANCE)
 		);
 		Rect settingsCard = new Rect(settingsX, contentY + tabHeight + 8.0F, settingsWidth, contentHeight - tabHeight - 8.0F);
 		List<SettingRow> rows = rowsFor(settingsCard);
@@ -403,6 +422,10 @@ public final class JesterConfigScreen extends Screen {
 					row(card, 36, Control.VISIBILITY, "Room visibility"),
 					row(card, 36 + ROW_HEIGHT, Control.DARKEN_DOORS, "Darken hidden doors")
 			);
+			case APPEARANCE -> List.of(
+					row(card, 36, Control.CUSTOM_FONT, "Custom font"),
+					row(card, 36 + ROW_HEIGHT, Control.FONT_FAMILY, "Font face")
+			);
 		};
 	}
 
@@ -413,7 +436,8 @@ public final class JesterConfigScreen extends Screen {
 	private enum Tab {
 		MAP("Map", "MAP HUD"),
 		DETAILS("Details", "MAP DETAILS"),
-		VISIBILITY("Visibility", "VISIBILITY");
+		VISIBILITY("Visibility", "VISIBILITY"),
+		APPEARANCE("Style", "APPEARANCE");
 
 		private final String label;
 		private final String heading;
@@ -433,7 +457,9 @@ public final class JesterConfigScreen extends Screen {
 		ROOM_NAMES,
 		SECRET_COUNTS,
 		TEAMMATES,
-		DARKEN_DOORS
+		DARKEN_DOORS,
+		CUSTOM_FONT,
+		FONT_FAMILY
 	}
 
 	private record SettingRow(Rect bounds, Control control, String label) {

@@ -16,6 +16,7 @@ public final class ConfigCodec {
 		persisted.schemaVersion = validated.schemaVersion();
 		persisted.mapHud = PersistedMapHud.from(validated.mapHud());
 		persisted.visibility = PersistedVisibility.from(validated.visibility());
+		persisted.ui = PersistedUi.from(validated.ui());
 		return gson.toJson(persisted) + System.lineSeparator();
 	}
 
@@ -33,7 +34,8 @@ public final class ConfigCodec {
 		return ConfigValidator.validate(new JesterConfig(
 				schemaVersion,
 				persisted.mapHud == null ? defaults.mapHud() : persisted.mapHud.toConfig(defaults.mapHud()),
-				persisted.visibility == null ? defaults.visibility() : persisted.visibility.toConfig(defaults.visibility())
+				persisted.visibility == null ? defaults.visibility() : persisted.visibility.toConfig(defaults.visibility()),
+				persisted.ui == null ? defaults.ui() : persisted.ui.toConfig(defaults.ui())
 		));
 	}
 
@@ -41,6 +43,7 @@ public final class ConfigCodec {
 		private Integer schemaVersion;
 		private PersistedMapHud mapHud;
 		private PersistedVisibility visibility;
+		private PersistedUi ui;
 	}
 
 	private static final class PersistedMapHud {
@@ -98,6 +101,25 @@ public final class ConfigCodec {
 			return new VisibilityConfig(
 					mode == null ? defaults.mode() : mode,
 					darkenUndiscoveredDoors == null ? defaults.darkenUndiscoveredDoors() : darkenUndiscoveredDoors
+			);
+		}
+	}
+
+	private static final class PersistedUi {
+		private Boolean customFont;
+		private FontFamily fontFamily;
+
+		private static PersistedUi from(UiConfig config) {
+			PersistedUi persisted = new PersistedUi();
+			persisted.customFont = config.customFont();
+			persisted.fontFamily = config.fontFamily();
+			return persisted;
+		}
+
+		private UiConfig toConfig(UiConfig defaults) {
+			return new UiConfig(
+					customFont == null ? defaults.customFont() : customFont,
+					fontFamily == null ? defaults.fontFamily() : fontFamily
 			);
 		}
 	}

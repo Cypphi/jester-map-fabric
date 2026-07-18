@@ -1,13 +1,14 @@
 package dev.cypphi.jestermap.dungeon.presentation;
 
+import dev.cypphi.jestermap.client.font.JesterTextRenderer;
 import dev.cypphi.jestermap.config.MapHudConfig;
+import dev.cypphi.jestermap.config.UiConfig;
 import dev.cypphi.jestermap.config.VisibilityConfig;
 import dev.cypphi.jestermap.config.VisibilityMode;
 import dev.cypphi.jestermap.dungeon.map.DungeonMapSnapshot;
 import dev.cypphi.jestermap.dungeon.map.DungeonRoomType;
 import dev.cypphi.jestermap.render.Renderer2d;
 import dev.cypphi.jestermap.render.minecraft.MinecraftRenderBackend2d;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public final class DungeonMapRenderer {
@@ -25,6 +26,7 @@ public final class DungeonMapRenderer {
 
 	private final MinecraftRenderBackend2d backend = new MinecraftRenderBackend2d();
 	private final Renderer2d renderer = new Renderer2d(backend);
+	private final JesterTextRenderer textRenderer = JesterTextRenderer.getInstance();
 
 	public void render(
 			GuiGraphicsExtractor graphics,
@@ -33,6 +35,7 @@ public final class DungeonMapRenderer {
 			float scale,
 			MapHudConfig mapConfig,
 			VisibilityConfig visibilityConfig,
+			UiConfig uiConfig,
 			float playerYaw,
 			DungeonMapSnapshot snapshot
 	) {
@@ -78,7 +81,8 @@ public final class DungeonMapRenderer {
 		}
 
 		if (!snapshot.available()) {
-			drawCenteredScaledText(graphics, "Waiting for Magical Map", WIDTH * 0.5F, HEIGHT * 0.5F - 3.0F, 0.65F, TEXT_COLOR);
+			drawCenteredScaledText(graphics, uiConfig, "Waiting for Dungeon Map", WIDTH * 0.5F, HEIGHT * 0.5F - 3.0F,
+					0.65F, TEXT_COLOR);
 		}
 		graphics.pose().popMatrix();
 	}
@@ -226,12 +230,19 @@ public final class DungeonMapRenderer {
 		};
 	}
 
-	private static void drawCenteredScaledText(GuiGraphicsExtractor graphics, String text, float centerX, float y, float scale, int color) {
-		Minecraft client = Minecraft.getInstance();
+	private void drawCenteredScaledText(
+			GuiGraphicsExtractor graphics,
+			UiConfig uiConfig,
+			String text,
+			float centerX,
+			float y,
+			float scale,
+			int color
+	) {
 		graphics.pose().pushMatrix();
 		graphics.pose().translate(centerX, y);
 		graphics.pose().scale(scale, scale);
-		graphics.text(client.font, text, -client.font.width(text) / 2, 0, color, true);
+		textRenderer.draw(graphics, uiConfig, text, -textRenderer.width(uiConfig, text) * 0.5F, 0.0F, color, true);
 		graphics.pose().popMatrix();
 	}
 }

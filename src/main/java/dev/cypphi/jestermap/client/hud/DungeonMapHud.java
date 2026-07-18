@@ -32,6 +32,7 @@ public final class DungeonMapHud {
 					(float) config.mapHud().scale(),
 					config.mapHud(),
 					config.visibility(),
+					config.ui(),
 					client.player.getYRot(),
 					snapshot
 			);

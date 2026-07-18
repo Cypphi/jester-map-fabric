@@ -13,6 +13,8 @@ class ConfigCodecTest {
 	@Test
 	void showsAllKnownRoomsByDefault() {
 		assertEquals(VisibilityMode.ALL_KNOWN, ConfigDefaults.create().visibility().mode());
+		assertTrue(ConfigDefaults.create().ui().customFont());
+		assertEquals(FontFamily.ROBOTO, ConfigDefaults.create().ui().fontFamily());
 	}
 
 	@Test
@@ -20,7 +22,8 @@ class ConfigCodecTest {
 		JesterConfig config = new JesterConfig(
 				ConfigDefaults.SCHEMA_VERSION,
 				new MapHudConfig(false, 140, -22, 1.35D, false, false, true, false, true),
-				new VisibilityConfig(VisibilityMode.ALL_KNOWN, false)
+				new VisibilityConfig(VisibilityMode.ALL_KNOWN, false),
+				new UiConfig(true, FontFamily.PAPYRUS)
 		);
 
 		String json = codec.encode(config);
@@ -38,6 +41,7 @@ class ConfigCodecTest {
 		assertEquals(ConfigDefaults.create().mapHud().rotateWithPlayer(), config.mapHud().rotateWithPlayer());
 		assertEquals(ConfigDefaults.create().mapHud().showTeammates(), config.mapHud().showTeammates());
 		assertEquals(ConfigDefaults.create().visibility(), config.visibility());
+		assertEquals(ConfigDefaults.create().ui(), config.ui());
 	}
 
 	@Test
