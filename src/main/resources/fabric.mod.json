@@ -4,6 +4,7 @@
 	"version": "${version}",
 	"name": "Jester Map",
 	"description": "Advanced Dungeons map for Hypixel Skyblock.",
+	"icon": "assets/jester_map/icon.png",
 	"authors": [
 		"Cypphi"
 	],
@@ -16,6 +17,9 @@
 		],
 		"client": [
 			"${entrypoint_package}.JesterMapEntrypoint"
+		],
+		"modmenu": [
+			"dev.cypphi.jestermap.client.screen.JesterModMenu"
 		]
 	},
 	"mixins": [
@@ -26,5 +30,8 @@
 		"minecraft": "${minecraft_dependency}",
 		"java": "${java_dependency}",
 		"fabric-api": "${fabric_dependency}"
+	},
+	"suggests": {
+		"modmenu": "*"
 	}
 }

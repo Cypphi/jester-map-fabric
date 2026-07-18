@@ -3,7 +3,9 @@
 	"package": "dev.cypphi.jestermap.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [],
-	"client": [],
+	"client": [
+		"accessor.GuiGraphicsExtractorAccessor"
+	],
 	"injectors": {
 		"defaultRequire": 1
 	}

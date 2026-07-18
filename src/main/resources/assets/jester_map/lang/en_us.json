@@ -1,4 +1,9 @@
 {
 	"modmenu.nameTranslation.jester_map": "Jester Map",
-	"modmenu.descriptionTranslation.jester_map": "Advanced Dungeons map for Hypixel Skyblock."
+	"modmenu.descriptionTranslation.jester_map": "Advanced Dungeons map for Hypixel Skyblock.",
+	"jester_map.config.title": "Jester Map",
+	"jester_map.config.subtitle": "Dungeon map configuration",
+	"jester_map.config.save": "Save changes",
+	"jester_map.config.reset": "Reset defaults",
+	"jester_map.config.close": "Close"
 }

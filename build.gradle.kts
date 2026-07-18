@@ -1,4 +1,5 @@
 import org.gradle.api.GradleException
+import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.jvm.tasks.Jar
 
@@ -12,6 +13,7 @@ val modId = "jester_map"
 val minecraftVersion = property("minecraft_version").toString()
 val loaderVersion = property("loader_version").toString()
 val fabricVersion = property("fabric_version").toString()
+val modMenuVersion = property("modmenu_version").toString()
 val modVersion = property("mod_version").toString()
 val mavenGroup = property("maven_group").toString()
 val archivesBaseName = property("archives_base_name").toString()
@@ -38,6 +40,13 @@ repositories {
 		url = uri("https://maven.fabricmc.net/")
 	}
 	mavenCentral()
+	maven {
+		name = "TerraformersMC"
+		url = uri("https://maven.terraformersmc.com/releases")
+		content {
+			includeGroup("com.terraformersmc")
+		}
+	}
 }
 
 loom {
@@ -62,50 +71,51 @@ dependencies {
 
 	modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
 	modImplementation("net.fabricmc.fabric-api:fabric-api:$fabricVersion")
+	implementation("com.google.code.gson:gson:2.13.1")
+	modCompileOnly("com.terraformersmc:modmenu:$modMenuVersion")
+
+	testImplementation(platform("org.junit:junit-bom:5.12.2"))
+	testImplementation("org.junit.jupiter:junit-jupiter")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 sourceSets {
 	named("main") {
-		java.setSrcDirs(
-			listOf(
-				rootProject.file("src/main/java"),
-				rootProject.file("src/mixin/java"),
-				rootProject.file("src/versions/$versionDigits/java"),
-			)
+		java.srcDirs(
+			rootProject.file("src/mixin/java"),
+			rootProject.file("src/versions/$versionDigits/java"),
 		)
-		resources.setSrcDirs(
-			listOf(
-				rootProject.file("src/main/resources"),
-				rootProject.file("src/mixin/resources"),
-			)
-		)
+		resources.srcDir(rootProject.file("src/mixin/resources"))
 	}
 }
 
 tasks.processResources {
-	inputs.property("version", project.version)
-	inputs.property("entrypoint_package", entrypointPackage)
-	inputs.property("loader_dependency", ">=$loaderVersion")
-	inputs.property("minecraft_dependency", minecraftDependency)
-	inputs.property("java_dependency", javaDependency)
-	inputs.property("fabric_dependency", fabricDependency)
+	dependsOn(tasks.named("stonecutterGenerate"))
+	val resourceProperties = mapOf(
+		"version" to version.toString(),
+		"entrypoint_package" to entrypointPackage,
+		"loader_dependency" to ">=$loaderVersion",
+		"minecraft_dependency" to minecraftDependency,
+		"java_dependency" to javaDependency,
+		"fabric_dependency" to fabricDependency,
+	)
+	inputs.properties(resourceProperties)
 
 	filesMatching("fabric.mod.json") {
-		expand(
-			mapOf(
-				"version" to project.version,
-				"entrypoint_package" to entrypointPackage,
-				"loader_dependency" to ">=$loaderVersion",
-				"minecraft_dependency" to minecraftDependency,
-				"java_dependency" to javaDependency,
-				"fabric_dependency" to fabricDependency,
-			)
-		)
+		expand(resourceProperties)
 	}
 }
 
 tasks.withType<JavaCompile>().configureEach {
 	options.release.set(javaRelease)
+}
+
+tasks.named<JavaCompile>("compileJava") {
+	dependsOn(tasks.named("stonecutterGenerate"))
+}
+
+tasks.withType<Test>().configureEach {
+	useJUnitPlatform()
 }
 
 if (mappingsProvider in setOf("none", "identity")) {
@@ -122,7 +132,7 @@ java {
 
 tasks.named<Jar>("jar") {
 	from("LICENSE") {
-		rename { "${it}_${base.archivesName.get()}" }
+		rename("LICENSE", "LICENSE_$archivesBaseName")
 	}
 }
 
